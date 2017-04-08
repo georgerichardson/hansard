@@ -10,7 +10,7 @@ from sqlalchemy.engine.url import URL
 from hansard import settings
 
 Base = declarative_base()
-session = sessionmaker()
+Session = sessionmaker()
 
 def db_connect():
     """
@@ -24,10 +24,10 @@ def create_table(engine):
     Base.metadata.create_all(engine)
 
 debate_mps_association = Table(
-    'debate_mps', Base.metadata,
-    Column('mp_id', ForeignKey('mps.id'), primary_key=True),
-    Column('debate_id', ForeignKey('debates.id'), primary_key=True)
-    )
+   'debate_mps', Base.metadata,
+   Column('mp_id', ForeignKey('mps.id'), primary_key=True),
+   Column('debate_id', ForeignKey('debates.id'), primary_key=True)
+   )
 
 class MP(Base):
     __tablename__ = 'mps'
@@ -38,14 +38,15 @@ class MP(Base):
     end_year = Column(String)
     constituency_last = Column(String)
     house = Column(String)
-    debates = relationship('Debate', 
-                            secondary=debate_mps_association, 
+    debates = relationship('Debate',
+                            secondary=debate_mps_association,
                             back_populates='mps')
-    #spoken_contribution_id = Column(Integer, ForeignKey('spoken_contributions.id'))
-    spoken_contributions = relationship('SpokenContribution', 
-                                        back_populates='mps')
-    party_id = Column(Integer, ForeignKey('parties.id'))
+    spoken_contributions = relationship('SpokenContribution',
+                                         back_populates='mp')
+    party_id = Column('party', Integer, ForeignKey('parties.id'))
     party = relationship("Party", back_populates='mps')
+
+
 
 class Debate(Base):
     __tablename__ = 'debates'
@@ -54,11 +55,11 @@ class Debate(Base):
     debate_id = Column(String)
     debate_name = Column(String)
     debate_date = Column(DateTime)
-    mps = relationship("MP", 
-                        secondary=debate_mps_association, 
+    mps = relationship("MP",
+                        secondary=debate_mps_association,
                         back_populates="debates")
-    spoken_contributions = relationship('SpokenContribution', 
-                                        back_populates='debates')
+    spoken_contributions = relationship('SpokenContribution',
+                                         back_populates='debate')
 
 class SpokenContribution(Base):
     __tablename__ = 'spoken_contributions'
@@ -67,9 +68,9 @@ class SpokenContribution(Base):
     contribution_id = Column(String)
     text = Column(String)
     time = Column(DateTime)
-    mp_id = Column(Integer, ForeignKey('mps.id'))
+    mp_id = Column('mp', Integer, ForeignKey('mps.id'))
     mp = relationship("MP", back_populates="spoken_contributions")
-    debate_id = Column(Integer, ForeignKey('debates.id'))
+    debate_id = Column('debate', Integer, ForeignKey('debates.id'))
     debate = relationship("Debate", back_populates="spoken_contributions")
 
 class Party(Base):
