@@ -66,7 +66,7 @@ class MPsSpider(scrapy.Spider):
                     end_year = self.end_year,
                     constituency_last = self.constituency_last,
                     house = self.house,
-                    #party = party
+                    party = party
                     )
             yield mp 
 
