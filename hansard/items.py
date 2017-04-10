@@ -14,7 +14,7 @@ class MP(Item):
     end_year = Field()
     constituency_last = Field()
     house = Field()
-    #party = Field()
+    party = Field()
 
 class Debate(Item):
     debate_id = Field()

@@ -37,7 +37,7 @@ class MPsSpider(scrapy.Spider):
             dates = l[1]
             start_date = dates[:4]
             end_date = dates.replace(start_date + ' - ', '')
-            return constituency, start_date, end_date
+            return constituency, int(start_date), end_date
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()
 
@@ -54,6 +54,11 @@ class MPsSpider(scrapy.Spider):
             self.name = mp.xpath('.//span/text()').extract_first()
             self.house = mp.xpath('.//div[@class="information house"]/text()').extract_first()
             self.party = mp.xpath('.//div[@class="information party"]/text()').extract_first()
+            
+            party = Party(
+                    party=self.party
+                    )
+            yield party
 
             mp = MP(
                     name = self.name,
@@ -61,14 +66,9 @@ class MPsSpider(scrapy.Spider):
                     end_year = self.end_year,
                     constituency_last = self.constituency_last,
                     house = self.house,
-                    party = self.party
+                    #party = party
                     )
             yield mp 
-
-            party = Party(
-                    party=self.party
-                    )
-            yield party
 
             yield scrapy.Request(response.urljoin(mp_url),
                           callback=self.parse_spoken)
@@ -82,7 +82,7 @@ class MPsSpider(scrapy.Spider):
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()
 
-        sleep(3)
+        sleep(1)
 
         contributions = response.xpath('//a[@class="no-underline"]')
         contributions = contributions[:self.contribution_limit]
@@ -106,7 +106,7 @@ class MPsSpider(scrapy.Spider):
                 string += text
             return string
 
-        sleep(2)
+        sleep(1)
 
         debate_id = self.contribution_url.split('/')[-2]
         debate_title = response.xpath('//h1[@class="page-title"]/text()').extract_first()
