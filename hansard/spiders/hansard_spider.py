@@ -3,6 +3,7 @@ import scrapy
 from time import sleep
 from urllib.parse import urlparse
 from urllib.parse import urljoin
+from datetime import datetime
 
 from hansard.items import MP, Debate, SpokenContribution, Party
 
@@ -15,13 +16,14 @@ def get_dates_and_constituency(constituency_date):
     start_date = dates[:4]
     end_date = dates.replace(start_date + ' - ', '')
     end_date = end_date.replace(')', '')
+    return constituency, int(start_date), end_date
 
 
 class MPsSpider(scrapy.Spider):
     name = "mps"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=4, mp_page_limit=1, contribution_limit=1, spoken_page_limit=1):
+    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=1, spoken_page_limit=1):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -41,8 +43,6 @@ class MPsSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_mps)
 
     def parse_mps(self, response):
-
-            return constituency, int(start_date), end_date
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()
 
@@ -73,6 +73,8 @@ class MPsSpider(scrapy.Spider):
                     house = self.house,
                     party = party
                     )
+
+            self.mp = mp
             yield mp 
 
             yield scrapy.Request(response.urljoin(mp_url),
@@ -116,19 +118,16 @@ class MPsSpider(scrapy.Spider):
         debate_id = self.contribution_url.split('/')[-2]
         debate_title = response.xpath('//h1[@class="page-title"]/text()').extract_first()
         debate_date = response.xpath('//div[@class = "col-xs-12 debate-date"]/text()').extract_first()
+        debate_date = datetime.strptime(debate_date, '%d %B %Y')
         contribution_id = self.contribution_url.split('#')[-1]
         contribution_box = response.xpath('//li[@id="{}"]/div[@class="inner"]//div[@class="contribution col-md-9"]'
                                             .format(contribution_id))
         contribution_text = make_text_string(contribution_box)
+        contribution_text = contribution_text.strip().split('\r')[0].strip()
         time = response.xpath('//li[@id="{}"]/preceding::div[1]/p/time'
                                             .format(contribution_id))
         contribution_time = time.xpath('@datetime').extract_first()
-
-        spoken_contribution = SpokenContribution(
-                                                contribution_id = contribution_id,
-                                                text = contribution_text,
-                                                time = contribution_time
-                                                )
+        contribution_time = datetime.strptime(contribution_time, '%d/%m/%Y %H:%M:%S')
 
         debate = Debate(
                         debate_id = debate_id,
@@ -136,7 +135,17 @@ class MPsSpider(scrapy.Spider):
                         debate_date = debate_date
                         )
 
-        yield spoken_contribution
+        spoken_contribution = SpokenContribution(
+                                        contribution_id = contribution_id,
+                                        text = contribution_text,
+                                        time = contribution_time,
+                                        mp = self.mp,
+                                        debate = debate
+                                        )
+
         yield debate
+        yield spoken_contribution
+        
+        
 
         

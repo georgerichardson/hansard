@@ -53,8 +53,8 @@ class Debate(Base):
 
     id = Column(Integer, primary_key=True)
     debate_id = Column(String, unique=True)
-    debate_name = Column(String, unique=True)
-    debate_date = Column(DateTime)
+    debate_name = Column(String)
+    debate_date = Column(String)
     mps = relationship('MP',
                         secondary=debate_mps_association,
                         back_populates='debates')

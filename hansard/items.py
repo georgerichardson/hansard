@@ -20,11 +20,15 @@ class Debate(Item):
     debate_id = Field()
     debate_name = Field()
     debate_date = Field()
+    #mps = Field()
+    #spoken_contributions = Field()
 
 class SpokenContribution(Item):
     contribution_id = Field()
     text = Field()
     time = Field()
+    mp = Field()
+    debate = Field()
 
 class Party(Item):
     party = Field()
