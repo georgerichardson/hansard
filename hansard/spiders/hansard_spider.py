@@ -6,11 +6,22 @@ from urllib.parse import urljoin
 
 from hansard.items import MP, Debate, SpokenContribution, Party
 
+
+def get_dates_and_constituency(constituency_date):
+    constituency_date = constituency_date.strip()
+    l = constituency_date.split('(')
+    constituency = l[0][:-1]
+    dates = l[1]
+    start_date = dates[:4]
+    end_date = dates.replace(start_date + ' - ', '')
+    end_date = end_date.replace(')', '')
+
+
 class MPsSpider(scrapy.Spider):
     name = "mps"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=1, spoken_page_limit=1):
+    def __init__(self, mp_limit=4, mp_page_limit=1, contribution_limit=1, spoken_page_limit=1):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -31,12 +42,6 @@ class MPsSpider(scrapy.Spider):
 
     def parse_mps(self, response):
 
-        def get_dates_and_constituency(constituency_date):
-            l = constituency_date.split('(')
-            constituency = l[0][:-1]
-            dates = l[1]
-            start_date = dates[:4]
-            end_date = dates.replace(start_date + ' - ', '')
             return constituency, int(start_date), end_date
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()

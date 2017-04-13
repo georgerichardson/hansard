@@ -81,20 +81,20 @@ class Party(Base):
     mps = relationship('MP', back_populates='party')
 
 
-def main():
-    engine = db_connect()
-    create_table(engine)
-    Session.configure(bind=engine)
-    session = Session()
+# def main():
+#     engine = db_connect()
+#     create_table(engine)
+#     Session.configure(bind=engine)
+#     session = Session()
 
-    labour = Party(party='Con')
-    abbot = MP(name='Diane Abbot', start_year=1987, constituency_last='Hackney North and Stoke Newington',
-               party=labour)
-    budget = Debate(debate_name='budget')
-    budget.mps = [abbot]
-    contrib = SpokenContribution(mp=abbot, text='Hear', debate=budget)
-    session.add(labour)
-    session.commit()
+#     labour = Party(party='Con')
+#     abbot = MP(name='Diane Abbot', start_year=1987, constituency_last='Hackney North and Stoke Newington',
+#                party=labour)
+#     budget = Debate(debate_name='budget')
+#     budget.mps = [abbot]
+#     contrib = SpokenContribution(mp=abbot, text='Hear', debate=budget)
+#     session.add(labour)
+#     session.commit()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
