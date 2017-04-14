@@ -33,7 +33,6 @@ class MPsSpider(scrapy.Spider):
         self.mp_page_limit = mp_page_limit
         self.contribution_limit = contribution_limit
         self.spoken_page_limit = spoken_page_limit
-        self.n = 0
 
     def start_requests(self):
         urls = [
@@ -95,11 +94,7 @@ class MPsSpider(scrapy.Spider):
         contributions = response.xpath('//a[@class="no-underline"]')
         contributions = contributions[:self.contribution_limit]
 
-        a = 0
-
         for contribution in contributions:
-            a = a + 1
-            print("CONTRIBUTIONS LOOPED: ", a)
             contribution_url = contribution.xpath('@href').extract_first()
             #self.contribution_url = contribution_url
 
@@ -153,7 +148,5 @@ class MPsSpider(scrapy.Spider):
                                         mp = self.mp,
                                         debate = debate
                                         )
-        self.n = self.n + 1
-        print("CONTRIBUTIONS SCRAPED: ", self.n)
         yield debate
         yield spoken_contribution
