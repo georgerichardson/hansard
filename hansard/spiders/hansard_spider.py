@@ -23,7 +23,7 @@ class MPsSpider(scrapy.Spider):
     name = "mps"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=1, spoken_page_limit=1):
+    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=12, spoken_page_limit=1):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -33,6 +33,7 @@ class MPsSpider(scrapy.Spider):
         self.mp_page_limit = mp_page_limit
         self.contribution_limit = contribution_limit
         self.spoken_page_limit = spoken_page_limit
+        self.n = 0
 
     def start_requests(self):
         urls = [
@@ -94,11 +95,16 @@ class MPsSpider(scrapy.Spider):
         contributions = response.xpath('//a[@class="no-underline"]')
         contributions = contributions[:self.contribution_limit]
 
-        for contribution in contributions:
-            contribution_url = contribution.xpath('@href').extract_first()
-            self.contribution_url = contribution_url
+        a = 0
 
-            yield scrapy.Request(response.urljoin(contribution_url), callback=self.parse_contribution)
+        for contribution in contributions:
+            a = a + 1
+            print("CONTRIBUTIONS LOOPED: ", a)
+            contribution_url = contribution.xpath('@href').extract_first()
+            #self.contribution_url = contribution_url
+
+            yield scrapy.Request(response.urljoin(contribution_url), callback=self.parse_contribution, 
+                meta={'contribution_url': contribution_url}, dont_filter=True)
 
         if next_page:
             if (int(next_page.split('=')[-1])) <= self.spoken_page_limit:
@@ -107,19 +113,23 @@ class MPsSpider(scrapy.Spider):
 
     def parse_contribution(self, response):
 
+        sleep(1)
+        contribution_url = response.meta.get('contribution_url')
+
         def make_text_string(path):
             string = ''
             for text in path.xpath('.//text()').extract():
                 string += text
             return string
 
-        sleep(1)
-
-        debate_id = self.contribution_url.split('/')[-2]
+        #import pdb; pdb.set_trace()
+        #debate_id = self.contribution_url.split('/')[-2]
+        debate_id = contribution_url.split('/')[-2]
         debate_title = response.xpath('//h1[@class="page-title"]/text()').extract_first()
         debate_date = response.xpath('//div[@class = "col-xs-12 debate-date"]/text()').extract_first()
         debate_date = datetime.strptime(debate_date, '%d %B %Y')
-        contribution_id = self.contribution_url.split('#')[-1]
+        #contribution_id = self.contribution_url.split('#')[-1]
+        contribution_id = contribution_url.split('#')[-1]
         contribution_box = response.xpath('//li[@id="{}"]/div[@class="inner"]//div[@class="contribution col-md-9"]'
                                             .format(contribution_id))
         contribution_text = make_text_string(contribution_box)
@@ -127,7 +137,8 @@ class MPsSpider(scrapy.Spider):
         time = response.xpath('//li[@id="{}"]/preceding::div[1]/p/time'
                                             .format(contribution_id))
         contribution_time = time.xpath('@datetime').extract_first()
-        contribution_time = datetime.strptime(contribution_time, '%d/%m/%Y %H:%M:%S')
+        if contribution_time:
+            contribution_time = datetime.strptime(contribution_time, '%d/%m/%Y %H:%M:%S')
 
         debate = Debate(
                         debate_id = debate_id,
@@ -142,10 +153,7 @@ class MPsSpider(scrapy.Spider):
                                         mp = self.mp,
                                         debate = debate
                                         )
-
+        self.n = self.n + 1
+        print("CONTRIBUTIONS SCRAPED: ", self.n)
         yield debate
         yield spoken_contribution
-        
-        
-
-        

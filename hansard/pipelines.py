@@ -27,9 +27,9 @@ def check_existing_mp(mp, session):
         return mp
 
 def check_existing_debate(debate, session):
-    if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
-        print("MP already in DB")
-        debate = session.query(Debate).filter_by(debate_id=debate_id.debate_id).first()
+    if session.query(exists().where(Debate.debate_name==debate.debate_name)).scalar():
+        print("Debate already in DB")
+        debate = session.query(Debate).filter_by(debate_name=debate.debate_name).first()
         return debate
     else:
         return debate
@@ -46,8 +46,6 @@ class HansardPipeline(object):
         try:
             if type(item) is hansard.items.MP:
                 print("Attempting to add MP")
-                #import pdb; pdb.set_trace()
-                #mp = MP(**item)
                 party = item['party']
                 party = Party(**party)
 
@@ -97,7 +95,7 @@ class HansardPipeline(object):
 
             elif type(item) is hansard.items.SpokenContribution:
                 print("Attempting to add Spoken Contribution")
-                import pdb; pdb.set_trace()
+                #import pdb; pdb.set_trace()
                 mp = item['mp']
                 mp = MP(name=mp['name'])
                 mp = check_existing_mp(mp, session)
@@ -128,7 +126,7 @@ class HansardPipeline(object):
             elif type(item) is hansard.items.Debate:
                 debate = Debate(**item)
                 self.debate = debate
-                if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
+                if session.query(exists().where(Debate.debate_name==debate.debate_name)).scalar():
                     session.close()
                 else:
                     try:
