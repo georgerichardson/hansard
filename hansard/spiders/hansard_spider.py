@@ -20,10 +20,10 @@ def get_dates_and_constituency(constituency_date):
 
 
 class MPsSpider(scrapy.Spider):
-    name = "mps"
+    name = "hansard"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=10, spoken_page_limit=1):
+    def __init__(self, mp_limit=None, mp_page_limit=None, contribution_limit=None, spoken_page_limit=None):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -120,7 +120,7 @@ class MPsSpider(scrapy.Spider):
 
     def parse_contribution(self, response):
 
-        sleep(1)
+        #sleep(1)
         contribution_url = response.meta.get('contribution_url')
 
         def make_text_string(path):
