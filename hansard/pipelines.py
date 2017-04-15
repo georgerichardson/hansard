@@ -27,9 +27,9 @@ def check_existing_mp(mp, session):
         return mp
 
 def check_existing_debate(debate, session):
-    if session.query(exists().where(Debate.debate_name==debate.debate_name)).scalar():
+    if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
         print("Debate already in DB")
-        debate = session.query(Debate).filter_by(debate_name=debate.debate_name).first()
+        debate = session.query(Debate).filter_by(debate_id=debate.debate_id).first()
         return debate
     else:
         return debate
@@ -126,7 +126,7 @@ class HansardPipeline(object):
             elif type(item) is hansard.items.Debate:
                 debate = Debate(**item)
                 self.debate = debate
-                if session.query(exists().where(Debate.debate_name==debate.debate_name)).scalar():
+                if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
                     session.close()
                 else:
                     try:

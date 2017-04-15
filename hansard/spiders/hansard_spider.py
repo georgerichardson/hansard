@@ -23,7 +23,7 @@ class MPsSpider(scrapy.Spider):
     name = "mps"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=None, spoken_page_limit=None):
+    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=10, spoken_page_limit=1):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -99,7 +99,7 @@ class MPsSpider(scrapy.Spider):
 
         contributions = response.xpath('//a[@class="no-underline"]')
 
-        if contribution_limit:
+        if self.contribution_limit:
             contributions = contributions[:self.contribution_limit]
 
         for contribution in contributions:
@@ -135,7 +135,7 @@ class MPsSpider(scrapy.Spider):
         debate_date = response.xpath('//div[@class = "col-xs-12 debate-date"]/text()').extract_first()
         debate_date = datetime.strptime(debate_date, '%d %B %Y')
         sitting = response.xpath('//ol[@class="breadcrumb hidden-xs"]//text()').extract()
-        sitting = [t.strip() for t in text if len(t.strip()) > 0][1:-1]
+        sitting = [s.strip() for s in sitting if len(s.strip()) > 0][1:-1]
         sitting = ' - '.join(sitting)
 
         contribution_id = contribution_url.split('#')[-1]
