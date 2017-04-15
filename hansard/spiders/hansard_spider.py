@@ -23,7 +23,7 @@ class MPsSpider(scrapy.Spider):
     name = "mps"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=14, spoken_page_limit=1):
+    def __init__(self, mp_limit=1, mp_page_limit=1, contribution_limit=None, spoken_page_limit=None):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -98,7 +98,7 @@ class MPsSpider(scrapy.Spider):
         #sleep(1)
 
         contributions = response.xpath('//a[@class="no-underline"]')
-        
+
         if contribution_limit:
             contributions = contributions[:self.contribution_limit]
 
@@ -126,6 +126,7 @@ class MPsSpider(scrapy.Spider):
         def make_text_string(path):
             string = ''
             for text in path.xpath('.//text()').extract():
+                string += ' '
                 string += text
             return string
 
@@ -133,6 +134,9 @@ class MPsSpider(scrapy.Spider):
         debate_title = response.xpath('//h1[@class="page-title"]/text()').extract_first()
         debate_date = response.xpath('//div[@class = "col-xs-12 debate-date"]/text()').extract_first()
         debate_date = datetime.strptime(debate_date, '%d %B %Y')
+        sitting = response.xpath('//ol[@class="breadcrumb hidden-xs"]//text()').extract()
+        sitting = [t.strip() for t in text if len(t.strip()) > 0][1:-1]
+        sitting = ' - '.join(sitting)
 
         contribution_id = contribution_url.split('#')[-1]
         contribution_box = response.xpath('//li[@id="{}"]/div[@class="inner"]//div[@class="contribution col-md-9"]'
@@ -148,7 +152,8 @@ class MPsSpider(scrapy.Spider):
         debate = Debate(
                         debate_id = debate_id,
                         debate_name = debate_title,
-                        debate_date = debate_date
+                        debate_date = debate_date,
+                        sitting = sitting
                         )
 
         spoken_contribution = SpokenContribution(

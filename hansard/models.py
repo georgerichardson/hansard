@@ -55,6 +55,7 @@ class Debate(Base):
     debate_id = Column(String, unique=True)
     debate_name = Column(String)
     debate_date = Column(String)
+    sitting = Column(String)
     mps = relationship('MP',
                         secondary=debate_mps_association,
                         back_populates='debates')

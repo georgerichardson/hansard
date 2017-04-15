@@ -20,6 +20,7 @@ class Debate(Item):
     debate_id = Field()
     debate_name = Field()
     debate_date = Field()
+    sitting = Field()
     #mps = Field()
     #spoken_contributions = Field()
 
