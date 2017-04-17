@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from urllib.parse import urljoin
 from datetime import datetime
 
-from hansard.items import MP, Debate, SpokenContribution, Party
+from hansard.items import Member, Debate, SpokenContribution, Party
 
 
 def get_dates_and_constituency(constituency_date):
@@ -23,7 +23,7 @@ class MPsSpider(scrapy.Spider):
     name = "hansard"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, mp_limit=None, mp_page_limit=None, contribution_limit=None, spoken_page_limit=None):
+    def __init__(self, mp_limit=1, mp_page_limit=2, contribution_limit=2, spoken_page_limit=2):
         '''
         parameters:
         mp_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -67,7 +67,7 @@ class MPsSpider(scrapy.Spider):
                     )
             yield party
 
-            mp = MP(
+            mp = Member(
                     name = self.name,
                     start_year = self.start_year,
                     end_year = self.end_year,
@@ -76,11 +76,10 @@ class MPsSpider(scrapy.Spider):
                     party = party
                     )
 
-            self.mp = mp
-            yield mp 
-
             yield scrapy.Request(response.urljoin(mp_url),
-                          callback=self.parse_spoken)
+                          callback=self.parse_spoken, meta={'mp': mp})
+
+            yield mp
 
         if next_page:
             if self.mp_page_limit:
@@ -92,6 +91,7 @@ class MPsSpider(scrapy.Spider):
                                         callback=self.parse_mps)
 
     def parse_spoken(self, response):
+        mp = response.meta.get('mp')
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()
 
@@ -104,24 +104,30 @@ class MPsSpider(scrapy.Spider):
 
         for contribution in contributions:
             contribution_url = contribution.xpath('@href').extract_first()
-            #self.contribution_url = contribution_url
 
-            yield scrapy.Request(response.urljoin(contribution_url), callback=self.parse_contribution, 
-                meta={'contribution_url': contribution_url}, dont_filter=True)
+            yield scrapy.Request(response.urljoin(contribution_url), 
+                callback=self.parse_contribution, 
+                meta={'contribution_url': contribution_url,'mp':mp}, 
+                dont_filter=True)
 
         if next_page:
             if self.spoken_page_limit:
                 if (int(next_page.split('=')[-1])) <= self.spoken_page_limit:
                     yield scrapy.Request(response.urljoin(next_page),
-                                        callback=self.parse_spoken)
+                                        callback=self.parse_spoken,
+                                        meta={'mp': mp})
             else:
                 yield scrapy.Request(response.urljoin(next_page),
-                                        callback=self.parse_spoken)
+                                        callback=self.parse_spoken,
+                                        meta={'mp': mp})
 
     def parse_contribution(self, response):
 
         #sleep(1)
         contribution_url = response.meta.get('contribution_url')
+        mp = response.meta.get('mp')
+
+        #import pdb; pdb.set_trace()
 
         def make_text_string(path):
             string = ''
@@ -160,7 +166,7 @@ class MPsSpider(scrapy.Spider):
                                         contribution_id = contribution_id,
                                         text = contribution_text,
                                         time = contribution_time,
-                                        mp = self.mp,
+                                        mp = mp,
                                         debate = debate
                                         )
         yield debate

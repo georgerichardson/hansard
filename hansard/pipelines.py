@@ -11,24 +11,27 @@ import hansard.items
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 def check_existing_party(party, session):
+    print("Checking if party exists")
     if session.query(exists().where(Party.party==party.party)).scalar():
-        print("Party already in DB")
+        print("It does")
         party = session.query(Party).filter_by(party=party.party).first()
         return party
     else:
         return party
 
 def check_existing_mp(mp, session):
+    print("Checking if MP exists")
     if session.query(exists().where(MP.name==mp.name)).scalar():
-        print("MP already in DB")
+        print("They do")
         mp = session.query(MP).filter_by(name=mp.name).first()
         return mp
     else:
         return mp
 
 def check_existing_debate(debate, session):
+    print("Checking if debate exists")
     if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
-        print("Debate already in DB")
+        print("It does")
         debate = session.query(Debate).filter_by(debate_id=debate.debate_id).first()
         return debate
     else:
@@ -44,7 +47,7 @@ class HansardPipeline(object):
         session = self.Session()
         
         try:
-            if type(item) is hansard.items.MP:
+            if type(item) is hansard.items.Member:
                 print("Attempting to add MP")
                 party = item['party']
                 party = Party(**party)
@@ -58,8 +61,9 @@ class HansardPipeline(object):
                            house=item['house'],
                            party=party
                            )
+                print(mp.constituency_last)
                 name = mp.name
-                self.mp = mp
+
                 #import pdb; pdb.set_trace()
                 if session.query(exists().where(MP.name==name)).scalar():
                     print("MP already exists")

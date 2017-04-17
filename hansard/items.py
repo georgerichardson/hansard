@@ -8,7 +8,7 @@
 from scrapy.item import Item, Field
 
 
-class MP(Item):
+class Member(Item):
     name = Field()
     start_year = Field()
     end_year = Field()
