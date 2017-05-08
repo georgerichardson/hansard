@@ -15,7 +15,7 @@ def make_text_string(path):
             return string
 
 class DebateSpider(scrapy.Spider):
-    name = "hansard_members"
+    name = "debate_spider"
     allowed_domains = ["hansard.parliament.uk"]
 
     def __init__(self, page_limit=1):
@@ -59,8 +59,6 @@ class DebateSpider(scrapy.Spider):
                 yield scrapy.Request(response.urljoin(next_page),
                                         callback=self.parse_debates)
 
-
-
     def parse_spoken(self):
 
         url = response.url
@@ -72,15 +70,39 @@ class DebateSpider(scrapy.Spider):
         sitting = response.xpath('//ol[@class="breadcrumb hidden-xs"]//text()').extract()
         sitting = [s.strip() for s in sitting if len(s.strip()) > 0][1:-1]
         sitting = ' - '.join(sitting)
-        chair = response.xpath('//p["@class=hs_76fChair"][.//em[text()="in the "]]/text()').extract_first()[1:-1]
+        chair = response.xpath('//p["@class=hs_76fChair"][.//em[text()="in the "]]/text()').extract_first()
+        if chair:
+            chair = chair[1:-1]
         if not chair:
             chair = 'No Chair'
 
+        debate = Debate(
+            debate_id = debate_id,
+            debate_name=debate_title,
+            debate_date=debate_date,
+            sitting=sitting
+            )
+        
+        yield debate
+
         contributions = response.xpath('//li[starts-with(@id,"contribution")]')
 
-        #for contribution in contributions:
-            #contribution_id
+        for contribution in contributions:
+            contribution_id = contribution.xpath('@id').extract()
+            member_id = contribution.xpath('.//h2[@class="memberLink"]/a[@class="nohighlight"]/@href').extract_first()
+            if member_id:
+                member_id = member_id.split("=")[-1]
+            else:
+                member_id = '0'
+            text = make_text_string(contribution.xpath('.//p'))
 
-        #for contributors in contributors:
-            #get names of contributors and their info
+            spoken_contribution = SpokenContribution(
+                contribution_id = contribution_id,
+                text = text,
+                member_id = member_id,
+                debate_id = debate_id
+                )
+
+            yield spoken_contribution
+
 

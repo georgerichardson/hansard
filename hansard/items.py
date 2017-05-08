@@ -13,6 +13,7 @@ class Member(Item):
     start_year = Field()
     end_year = Field()
     constituency_last = Field()
+    member_id = Field()
     house = Field()
     party = Field()
 
@@ -27,9 +28,9 @@ class Debate(Item):
 class SpokenContribution(Item):
     contribution_id = Field()
     text = Field()
-    time = Field()
-    mp = Field()
-    debate = Field()
+    #time = Field()
+    member_id = Field()
+    debate_id = Field()
 
 class Party(Item):
     party = Field()

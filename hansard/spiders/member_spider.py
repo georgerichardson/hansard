@@ -81,6 +81,7 @@ class MemberSpider(scrapy.Spider):
                     start_year = self.start_year,
                     end_year = self.end_year,
                     constituency_last = self.constituency_last,
+                    member_id = member_url.split('=')[-1],
                     house = self.house,
                     party = party
                     )
