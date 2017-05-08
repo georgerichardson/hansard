@@ -34,6 +34,7 @@ class MP(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
+    member_id = Column(String)
     start_year = Column(Integer)
     end_year = Column(String)
     constituency_last = Column(String)
@@ -70,6 +71,8 @@ class SpokenContribution(Base):
     contribution_id = Column(String, unique=True)
     text = Column(String)
     time = Column(DateTime)
+    member_id = Column(Integer)
+    debate_identifier = Column(String)
     mp_id = Column('mp', Integer, ForeignKey('mps.id'))
     mp = relationship('MP', back_populates='spoken_contributions')
     debate_id = Column('debate', Integer, ForeignKey('debates.id'))

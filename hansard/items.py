@@ -30,7 +30,7 @@ class SpokenContribution(Item):
     text = Field()
     #time = Field()
     member_id = Field()
-    debate_id = Field()
+    debate_identifier = Field()
 
 class Party(Item):
     party = Field()

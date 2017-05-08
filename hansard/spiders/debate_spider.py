@@ -18,13 +18,14 @@ class DebateSpider(scrapy.Spider):
     name = "debate_spider"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, page_limit=1):
+    def __init__(self, page_limit=1, debate_limit=None):
         '''
         parameters:
         member_limit - Limit on the number of pages of mps to scrape. Default = 1
         debate_limit - Limit on the number of debate contributions to scrape. Default = 1
         '''
         self.page_limit = page_limit
+        self.debate_limit = debate_limit
 
     def start_requests(self, commons=True, lords=True):
 
@@ -41,11 +42,13 @@ class DebateSpider(scrapy.Spider):
 
         yield scrapy.Request(url=url, callback=self.parse_debates)
 
-    def parse_debates(self):
+    def parse_debates(self, response):
 
         next_page = response.xpath('//a[@title="Go to next page"]/@href').extract_first()
 
         debates = response.xpath('//a[@class="no-underline"]/@href').extract()
+
+        debates = debates[:self.debate_limit]
 
         for debate in debates:
             yield scrapy.Request(response.urljoin(debate), callback=self.parse_spoken)
@@ -59,7 +62,7 @@ class DebateSpider(scrapy.Spider):
                 yield scrapy.Request(response.urljoin(next_page),
                                         callback=self.parse_debates)
 
-    def parse_spoken(self):
+    def parse_spoken(self, response):
 
         url = response.url
 
@@ -88,19 +91,19 @@ class DebateSpider(scrapy.Spider):
         contributions = response.xpath('//li[starts-with(@id,"contribution")]')
 
         for contribution in contributions:
-            contribution_id = contribution.xpath('@id').extract()
+            contribution_id = contribution.xpath('@id').extract_first()
             member_id = contribution.xpath('.//h2[@class="memberLink"]/a[@class="nohighlight"]/@href').extract_first()
             if member_id:
-                member_id = member_id.split("=")[-1]
+                member_id = int(member_id.split("=")[-1])
             else:
-                member_id = '0'
+                member_id = 0
             text = make_text_string(contribution.xpath('.//p'))
 
             spoken_contribution = SpokenContribution(
                 contribution_id = contribution_id,
                 text = text,
                 member_id = member_id,
-                debate_id = debate_id
+                debate_identifier = debate_id
                 )
 
             yield spoken_contribution

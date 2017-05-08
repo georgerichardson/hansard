@@ -100,22 +100,21 @@ class HansardPipeline(object):
             elif type(item) is hansard.items.SpokenContribution:
                 print("Attempting to add Spoken Contribution")
                 #import pdb; pdb.set_trace()
-                mp = item['mp']
-                mp = MP(name=mp['name'])
-                mp = check_existing_mp(mp, session)
-                item['mp'] = mp
+                #mp = item['mp']
+                #mp = MP(name=mp['name'])
+                #mp = check_existing_mp(mp, session)
+                #item['mp'] = mp
 
-                debate = item['debate']
-                debate = Debate(**debate)
-                debate = check_existing_debate(debate, session)
-                item['debate'] = debate
+                #debate = item['debate']
+                #debate = Debate(**debate)
+                #debate = check_existing_debate(debate, session)
+                #item['debate'] = debate
 
                 spoken_contribution = SpokenContribution(**item)
-                
-
                 if session.query(exists().where(SpokenContribution.contribution_id==spoken_contribution.contribution_id)).scalar():
                     session.close()
                 else:
+                    #import pdb; pdb.set_trace()
                     try:
                         session.add(spoken_contribution)
                         session.commit()
