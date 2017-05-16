@@ -9,19 +9,20 @@ from hansard.items import Member, Party
 
 def get_dates_and_constituency(constituency_date):
     constituency_date = constituency_date.strip()
-    l = constituency_date.split('(')
-    constituency = l[0][:-1]
-    dates = l[1]
-    start_date = dates[:4]
-    end_date = dates.replace(start_date + ' - ', '')
-    end_date = end_date.replace(')', '')
+    c = constituency_date.split('(')
+    constituency = c[0][:-1]
+    dates = constituency_date.split(' ')
+    start_date = dates[-3].strip('(')
+    end_date = dates[-1].strip(')')
+    #end_date = dates.replace(start_date + ' - ', '')
+    #end_date = end_date.replace(')', '')
     return constituency, int(start_date), end_date
 
 class MemberSpider(scrapy.Spider):
     name = "hansard_members"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, member_limit=None, member_page_limit=2):
+    def __init__(self, member_limit=None, member_page_limit=201):
         '''
         parameters:
         member_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -81,14 +82,16 @@ class MemberSpider(scrapy.Spider):
                     start_year = self.start_year,
                     end_year = self.end_year,
                     constituency_last = self.constituency_last,
-                    member_id = member_url.split('=')[-1],
+                    member_identifier = int(member_url.split('=')[-2][:-5]),
                     house = self.house,
-                    party = party
+                    party = party,
+                    member_url = member_url
                     )
 
             yield member
 
         if next_page:
+            print("PAGE", int(next_page.split('=')[-1]))
             if self.member_page_limit:
                 if int(next_page.split('=')[-1]) <= self.member_page_limit:
                     yield scrapy.Request(response.urljoin(next_page),

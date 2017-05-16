@@ -30,12 +30,20 @@ def check_existing_mp(mp, session):
 
 def check_existing_debate(debate, session):
     print("Checking if debate exists")
-    if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
+    if session.query(exists().where(Debate.debate_identifier==debate.debate_identifier)).scalar():
         print("It does")
-        debate = session.query(Debate).filter_by(debate_id=debate.debate_id).first()
+        debate = session.query(Debate).filter_by(debate_identifier=debate.debate_identifier).first()
         return debate
     else:
         return debate
+
+def get_member_by_id(member_identifier, session):
+    print("Fetching member by ID")
+    if session.query(exists().where(MP.member_identifier==str(member_identifier))).scalar():
+        member =  session.query(MP).filter_by(member_identifier=str(member_identifier)).first()
+        return member
+    else:
+        return None
 
 class HansardPipeline(object):
     def __init__(self):
@@ -59,13 +67,14 @@ class HansardPipeline(object):
                            end_year=item['end_year'],
                            constituency_last=item['constituency_last'],
                            house=item['house'],
-                           party=party
+                           party=party,
+                           member_identifier=item['member_identifier'],
+                           member_url=item['member_url']
                            )
-                print(mp.constituency_last)
                 name = mp.name
 
                 #import pdb; pdb.set_trace()
-                if session.query(exists().where(MP.name==name)).scalar():
+                if session.query(exists().where(MP.member_identifier==str(mp.member_identifier))).scalar():
                     print("MP already exists")
                     session.close()
                 else:
@@ -78,7 +87,6 @@ class HansardPipeline(object):
                         print("Failed to add MP")
                     finally:
                         session.close()
-                        print("All done")
 
             elif type(item) is hansard.items.Party:
                 print("Attempting to add Party")
@@ -100,18 +108,20 @@ class HansardPipeline(object):
             elif type(item) is hansard.items.SpokenContribution:
                 print("Attempting to add Spoken Contribution")
                 #import pdb; pdb.set_trace()
-                #mp = item['mp']
+                member_identifier = item['member_identifier']
+                member = get_member_by_id(member_identifier, session)
+                item['member'] = member
                 #mp = MP(name=mp['name'])
                 #mp = check_existing_mp(mp, session)
                 #item['mp'] = mp
 
-                #debate = item['debate']
-                #debate = Debate(**debate)
-                #debate = check_existing_debate(debate, session)
-                #item['debate'] = debate
+                debate = item['debate']
+                debate = Debate(**debate)
+                debate = check_existing_debate(debate, session)
+                item['debate'] = debate
 
                 spoken_contribution = SpokenContribution(**item)
-                if session.query(exists().where(SpokenContribution.contribution_id==spoken_contribution.contribution_id)).scalar():
+                if session.query(exists().where(SpokenContribution.contribution_identifier==spoken_contribution.contribution_identifier)).scalar():
                     session.close()
                 else:
                     #import pdb; pdb.set_trace()
@@ -129,7 +139,7 @@ class HansardPipeline(object):
             elif type(item) is hansard.items.Debate:
                 debate = Debate(**item)
                 self.debate = debate
-                if session.query(exists().where(Debate.debate_id==debate.debate_id)).scalar():
+                if session.query(exists().where(Debate.debate_identifier==debate.debate_identifier)).scalar():
                     session.close()
                 else:
                     try:

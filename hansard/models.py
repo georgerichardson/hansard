@@ -34,16 +34,17 @@ class MP(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    member_id = Column(String)
+    member_identifier = Column(String)
     start_year = Column(Integer)
     end_year = Column(String)
     constituency_last = Column(String)
     house = Column(String)
+    member_url = Column(String)
     debates = relationship('Debate',
                             secondary=debate_mps_association,
                             back_populates='mps')
     spoken_contributions = relationship('SpokenContribution',
-                                         back_populates='mp')
+                                         back_populates='member')
     party_id = Column('party', Integer, ForeignKey('parties.id'))
     party = relationship('Party', back_populates='mps')
 
@@ -53,7 +54,8 @@ class Debate(Base):
     __tablename__ = 'debates'
 
     id = Column(Integer, primary_key=True)
-    debate_id = Column(String, unique=True)
+    debate_identifier = Column(String, unique=True)
+    debate_url = Column(String)
     debate_name = Column(String)
     debate_date = Column(String)
     sitting = Column(String)
@@ -68,13 +70,13 @@ class SpokenContribution(Base):
     __tablename__ = 'spoken_contributions'
 
     id = Column(Integer, primary_key=True)
-    contribution_id = Column(String, unique=True)
+    contribution_identifier = Column(String, unique=True)
     text = Column(String)
     time = Column(DateTime)
-    member_id = Column(Integer)
+    member_identifier = Column(Integer)
     debate_identifier = Column(String)
-    mp_id = Column('mp', Integer, ForeignKey('mps.id'))
-    mp = relationship('MP', back_populates='spoken_contributions')
+    member_id = Column('mp', Integer, ForeignKey('mps.id'))
+    member = relationship('MP', back_populates='spoken_contributions')
     debate_id = Column('debate', Integer, ForeignKey('debates.id'))
     debate = relationship('Debate', back_populates='spoken_contributions')
 

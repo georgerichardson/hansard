@@ -15,4 +15,8 @@ Second a graph of two dimensional word vectors for the terms *'economy', 'educat
 
 ![LSI](word2vec-2d-con-lab.png)
 
-These results are unoptimised and the dimensionality reduction parameters have not been tuned, but the figures offer a representation of how we might begin to distill politicians views, by their language into visuals.
+These results are unoptimised and the dimensionality reduction parameters have not been tuned, but the figures offer a representation of how we might begin to distill the opinions and positions of politicians, by their language into visuals.
+
+### Future Aims
+
+- [ ] To connect language analysis with voting record

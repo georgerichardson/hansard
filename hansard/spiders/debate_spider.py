@@ -18,7 +18,7 @@ class DebateSpider(scrapy.Spider):
     name = "debate_spider"
     allowed_domains = ["hansard.parliament.uk"]
 
-    def __init__(self, page_limit=1, debate_limit=None):
+    def __init__(self, page_limit=None, debate_limit=None):
         '''
         parameters:
         member_limit - Limit on the number of pages of mps to scrape. Default = 1
@@ -80,7 +80,8 @@ class DebateSpider(scrapy.Spider):
             chair = 'No Chair'
 
         debate = Debate(
-            debate_id = debate_id,
+            debate_identifier = debate_id,
+            debate_url = url,
             debate_name=debate_title,
             debate_date=debate_date,
             sitting=sitting
@@ -100,10 +101,11 @@ class DebateSpider(scrapy.Spider):
             text = make_text_string(contribution.xpath('.//p'))
 
             spoken_contribution = SpokenContribution(
-                contribution_id = contribution_id,
+                contribution_identifier = contribution_id,
                 text = text,
-                member_id = member_id,
-                debate_identifier = debate_id
+                member_identifier = member_id,
+                debate_identifier = debate_id,
+                debate = debate
                 )
 
             yield spoken_contribution

@@ -13,12 +13,14 @@ class Member(Item):
     start_year = Field()
     end_year = Field()
     constituency_last = Field()
-    member_id = Field()
+    member_identifier = Field()
     house = Field()
     party = Field()
+    member_url = Field()
 
 class Debate(Item):
-    debate_id = Field()
+    debate_identifier = Field()
+    debate_url = Field()
     debate_name = Field()
     debate_date = Field()
     sitting = Field()
@@ -26,11 +28,13 @@ class Debate(Item):
     #spoken_contributions = Field()
 
 class SpokenContribution(Item):
-    contribution_id = Field()
+    contribution_identifier = Field()
     text = Field()
     #time = Field()
-    member_id = Field()
+    member_identifier = Field()
     debate_identifier = Field()
+    debate = Field()
+    member = Field()
 
 class Party(Item):
     party = Field()
